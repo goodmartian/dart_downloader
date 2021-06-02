@@ -46,12 +46,13 @@ class Download extends Bloc<DownloadEvent, DownloadState> {
   @override
   Stream<DownloadState> mapEventToState(DownloadEvent event) async* {
     if (event is DownloadStart) {
-      yield DownloadInProgress(url: state.url, bytes: [], maxBytes: event.maxBytes);
-    } else if (event is DownloadReceive && state is DownloadInProgress) {
-      (state as DownloadInProgress).bytes.addAll(event.bytes);
-      yield DownloadInProgress(url: state.url, bytes: (state as DownloadInProgress).bytes, maxBytes: (state as DownloadInProgress).maxBytes);
-    } else if (event is DownloadComplete && state is DownloadInProgress) {
-      yield DownloadCompleted(url: state.url, bytes: (state as DownloadInProgress).bytes, maxBytes: (state as DownloadInProgress).maxBytes);
+      yield DownloadInProgress(url: state.url, curBytes: 0, bytes: [], maxBytes: event.maxBytes);
+    } else if (event is DownloadReceive && state is DownloadContentState) {
+      var bytes = (state as DownloadContentState).bytes;
+      bytes.addAll(event.bytes);
+      yield DownloadInProgress(url: state.url, curBytes: (state as DownloadContentState).curBytes + event.bytes.length, bytes: bytes, maxBytes: (state as DownloadContentState).maxBytes);
+    } else if (event is DownloadComplete && state is DownloadContentState) {
+      yield DownloadCompleted(url: state.url, curBytes: (state as DownloadContentState).bytes.length, bytes: (state as DownloadContentState).bytes, maxBytes: (state as DownloadContentState).maxBytes);
     } else if (event is DownloadStop) {
       yield DownloadStopped(url: state.url);
     }
