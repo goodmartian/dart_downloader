@@ -48,7 +48,8 @@ class Download extends Bloc<DownloadEvent, DownloadState> {
     if (event is DownloadStart) {
       yield DownloadInProgress(url: state.url, bytes: [], maxBytes: event.maxBytes);
     } else if (event is DownloadReceive && state is DownloadInProgress) {
-      yield DownloadInProgress(url: state.url, bytes: (state as DownloadInProgress).bytes + event.bytes, maxBytes: (state as DownloadInProgress).maxBytes);
+      (state as DownloadInProgress).bytes.addAll(event.bytes);
+      yield DownloadInProgress(url: state.url, bytes: (state as DownloadInProgress).bytes, maxBytes: (state as DownloadInProgress).maxBytes);
     } else if (event is DownloadComplete && state is DownloadInProgress) {
       yield DownloadCompleted(url: state.url, bytes: (state as DownloadInProgress).bytes, maxBytes: (state as DownloadInProgress).maxBytes);
     } else if (event is DownloadStop) {

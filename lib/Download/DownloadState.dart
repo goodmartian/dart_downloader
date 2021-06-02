@@ -21,11 +21,12 @@ class DownloadStopped extends DownloadState {
   }) : super(url);
 }
 
+// ignore: must_be_immutable
 class DownloadContentState extends DownloadState {
-  final List<int> bytes;
+  List<int> bytes;
   final int maxBytes;
 
-  const DownloadContentState({
+  DownloadContentState({
     required String url,
     required this.bytes,
     required this.maxBytes,
@@ -35,16 +36,18 @@ class DownloadContentState extends DownloadState {
   List<Object?> get props => [bytes, maxBytes, ...super.props];
 }
 
+// ignore: must_be_immutable
 class DownloadInProgress extends DownloadContentState {
-  const DownloadInProgress({
+  DownloadInProgress({
     required String url,
     required List<int> bytes,
     required int maxBytes,
   }) : super(url: url, bytes: bytes, maxBytes: maxBytes);
 }
 
+// ignore: must_be_immutable
 class DownloadCompleted extends DownloadContentState {
-  const DownloadCompleted({
+  DownloadCompleted({
     required String url,
     required List<int> bytes,
     required int maxBytes,
