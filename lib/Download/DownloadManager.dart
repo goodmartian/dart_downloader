@@ -13,7 +13,7 @@ class DownloadManager extends Bloc<DownloadManagerEvent, DownloadManagerState> {
       yield DownloadManagerState(
         downloads: [
           ...state.downloads,
-          Download(event.url),
+          Download(event.url, file: event.file),
         ],
       );
     }

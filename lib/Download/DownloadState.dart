@@ -1,24 +1,32 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 
 abstract class DownloadState extends Equatable {
   final String url;
+  final File? file;
 
-  const DownloadState(this.url);
+  const DownloadState(
+    this.url, {
+    this.file,
+  });
 
   @override
-  List<Object?> get props => [url];
+  List<Object?> get props => [url, file];
 }
 
 class DownloadAborted extends DownloadState {
   const DownloadAborted({
     required String url,
-  }) : super(url);
+    File? file,
+  }) : super(url, file: file);
 }
 
 class DownloadStopped extends DownloadState {
   const DownloadStopped({
     required String url,
-  }) : super(url);
+    File? file,
+  }) : super(url, file: file);
 }
 
 class DownloadContentState extends DownloadState {
@@ -31,7 +39,8 @@ class DownloadContentState extends DownloadState {
     required this.bytes,
     required this.curBytes,
     required this.maxBytes,
-  }) : super(url);
+    File? file,
+  }) : super(url, file: file);
 
   @override
   List<Object?> get props => [curBytes, maxBytes, ...super.props];
@@ -43,7 +52,8 @@ class DownloadInProgress extends DownloadContentState {
     required List<int> bytes,
     required int curBytes,
     required int maxBytes,
-  }) : super(url: url, bytes: bytes, curBytes: curBytes, maxBytes: maxBytes);
+    File? file,
+  }) : super(url: url, bytes: bytes, curBytes: curBytes, maxBytes: maxBytes, file: file);
 }
 
 class DownloadCompleted extends DownloadContentState {
@@ -52,5 +62,6 @@ class DownloadCompleted extends DownloadContentState {
     required List<int> bytes,
     required int curBytes,
     required int maxBytes,
-  }) : super(url: url, bytes: bytes, curBytes: curBytes, maxBytes: maxBytes);
+    File? file,
+  }) : super(url: url, bytes: bytes, curBytes: curBytes, maxBytes: maxBytes, file: file);
 }

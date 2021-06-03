@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:http/http.dart' as http;
 
@@ -5,7 +7,10 @@ import 'DownloadEvent.dart';
 import 'DownloadState.dart';
 
 class Download extends Bloc<DownloadEvent, DownloadState> {
-  Download(final String url) : super(DownloadStopped(url: url)) {
+  Download(
+    final String url, {
+    File? file,
+  }) : super(DownloadStopped(url: url, file: file)) {
     download();
   }
 
@@ -46,15 +51,17 @@ class Download extends Bloc<DownloadEvent, DownloadState> {
   @override
   Stream<DownloadState> mapEventToState(DownloadEvent event) async* {
     if (event is DownloadStart) {
-      yield DownloadInProgress(url: state.url, curBytes: 0, bytes: [], maxBytes: event.maxBytes);
+      await state.file?.writeAsBytes([], mode: FileMode.write, flush: true);
+      yield DownloadInProgress(url: state.url, curBytes: 0, bytes: [], maxBytes: event.maxBytes, file: state.file);
     } else if (event is DownloadReceive && state is DownloadContentState) {
       var bytes = (state as DownloadContentState).bytes;
-      bytes.addAll(event.bytes);
-      yield DownloadInProgress(url: state.url, curBytes: (state as DownloadContentState).curBytes + event.bytes.length, bytes: bytes, maxBytes: (state as DownloadContentState).maxBytes);
+      await state.file?.writeAsBytes(event.bytes, mode: FileMode.append, flush: true);
+      if (state.file == null) bytes.addAll(event.bytes);
+      yield DownloadInProgress(url: state.url, curBytes: (state as DownloadContentState).curBytes + event.bytes.length, bytes: bytes, maxBytes: (state as DownloadContentState).maxBytes, file: state.file);
     } else if (event is DownloadComplete && state is DownloadContentState) {
-      yield DownloadCompleted(url: state.url, curBytes: (state as DownloadContentState).bytes.length, bytes: (state as DownloadContentState).bytes, maxBytes: (state as DownloadContentState).maxBytes);
+      yield DownloadCompleted(url: state.url, curBytes: state.file != null ? (await state.file!.readAsBytes()).length : (state as DownloadContentState).bytes.length, bytes: (state as DownloadContentState).bytes, maxBytes: (state as DownloadContentState).maxBytes, file: state.file);
     } else if (event is DownloadStop) {
-      yield DownloadStopped(url: state.url);
+      yield DownloadStopped(url: state.url, file: state.file);
     }
   }
 }
